@@ -9,12 +9,7 @@ import org.jfree.chart.ui.{ApplicationFrame, RectangleInsets}
 import org.jfree.chart.{ChartFactory, ChartPanel, JFreeChart}
 import org.jfree.data.xy.{XYDataset, XYSeries, XYSeriesCollection}
 
-
-object A extends App {
-  new LabChart("Метод хорд", 3, 4, x => Math.pow(x, 3) - 3.125*Math.pow(x, 2) - 3.5*x + 2.458).drawChart()
-}
-
-class LabChart(title: String, a: Double, b: Double, f: Function[Double, Double]) extends ApplicationFrame("Lab3") {
+class EquationChart(title: String, a: Double, b: Double, f: Function[Double, Double]) extends ApplicationFrame("Lab3") {
 
   def drawChart(): Unit = {
     val chart = createChart()
@@ -79,7 +74,7 @@ class LabChart(title: String, a: Double, b: Double, f: Function[Double, Double])
 
   def createDataset(a: Double, b: Double): XYDataset = {
     val step = Math.abs(b - a) / 100
-    val dataset = new XYSeries(1)
+    val dataset = new XYSeries(new String("x^3"))
     var i = a
     while (i < b) {
       dataset.add(i, f(i))

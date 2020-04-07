@@ -1,4 +1,4 @@
-package lab1;
+package sle;
 
 import scala.collection.immutable.List;
 

@@ -8,30 +8,74 @@ import scala.io.StdIn
 class CommandHandler {
   def handleUserInput(): Unit = {
     var funN: Option[Int] = None
-//    while (funN.isEmpty || funN.get < 1 || funN.get > 5 ) {
-//      println("Выберите интеграл из списка:\n" +
-//        "1) sin(x)\n" +
-//        "2) cos(x)\n" +
-//        "3) 5\n" +
-//        "4) x^3/3\n" +
-//        "5) a*x^3 - b*x^2 - c*x + d")
-//      try {
-//        funN = Option(StdIn.readInt())
-//      } catch {
-//        case x: Exception => println("Введите 1, 2, 3, 4 или 5")
-//      }
-//    }
+    while (funN.isEmpty || funN.get < 1 || funN.get > 3 ) {
+      println("Что мы хотим решать?\n" +
+        "1) нелинейное уравнение a*x^3 - b*x^2 - c*x + d методом хорд\n" +
+        "2) нелинейное уравнение a*x^3 - b*x^2 - c*x + d методом секущих\n" +
+        "3) систему нелинейных уравнений \n" +
+        "\ty = a*sin(x) + b\n" +
+        "\ty = c*e^x + d")
+      try {
+        funN = Option(StdIn.readInt())
+      } catch {
+        case x: Exception => println("Введите 1, 2, или 3")
+      }
+    }
+
+    var default = true
+    println("Хотите ли вы сами ввести параметры a,b,c,d? Если нет - будут значения по-умолчанию")
+    if (funN.get != 3)
+      println("нелинейное уравение по-умолчанию x^3 - 3.125*x^2 - 3.5*x + 2.458")
+    else
+      println("система нелинейных уравнений по-умолчанию:\n" +
+        "\ty = sin(x) - 3.125\n" +
+        "\ty = -3.5*e^x + 2.458")
+    if (StdIn.readLine().toLowerCase().equals("да"))
+      default = false
+
+    var a: Option[Double] = None
+    var b: Option[Double] = None
+    var c: Option[Double] = None
+    var d: Option[Double] = None
+
+    if (!default) {
+      while (a.isEmpty) {
+        println("Введите a")
+        a = readDoubleSafe()
+      }
+      while (b.isEmpty) {
+        println("Введите b")
+        b = readDoubleSafe()
+      }
+      while (c.isEmpty) {
+        println("Введите c")
+        c = readDoubleSafe()
+      }
+      while (d.isEmpty) {
+        println("Введите d")
+        d = readDoubleSafe()
+      }
+    } else {
+      a = Some(1.0)
+      b = Some(-3.125)
+      c = Some(-3.5)
+      d = Some(2.458)
+    }
 
     var low: Option[Double] = None
-    while (low.isEmpty) {
-      println("Введите левую границу отрезка")
-      low = readDoubleSafe()
+    if (funN.get != 3) {
+      while (low.isEmpty) {
+        println("Введите левую границу отрезка")
+        low = readDoubleSafe()
+      }
     }
 
     var high: Option[Double] = None
-    while (high.isEmpty || high.get <= low.get ) {
-      println("Введите правую границу отрезка. Она должна быть больше левой границы!")
-      high = readDoubleSafe()
+    if (funN.get != 3) {
+      while (high.isEmpty || high.get <= low.get) {
+        println("Введите правую границу отрезка. Она должна быть больше левой границы!")
+        high = readDoubleSafe()
+      }
     }
 
     var accuracy: Option[Double] = None
@@ -40,48 +84,63 @@ class CommandHandler {
       accuracy = readDoubleSafe()
     }
 
-    "x^3 - 3.125*x^2 - 3.5*x + 2.458"
     val functions =
-      List[Double => Double](x => Math.pow(x, 3) - 3.125*Math.pow(x, 2) - 3.5*x + 2.458)
-    val deriatives =
-      List[Double => Double](x => 3*Math.pow(x, 2) - 6.25*x - 3.5)
-    val secondDeriatives =
-      List[Double => Double](x => 6*x - 6.25)
+      List[Double => Double](x => a.get*Math.pow(x, 3) + b.get*Math.pow(x, 2) + c.get*x + d.get)
+    val dfdx =
+      List[Double => Double](x => a.get*3*Math.pow(x, 2) + b.get*2*x + c.get)
+    val d2fdx2 =
+      List[Double => Double](x => a.get*6*x + b.get*2)
 
     val systemOf2Functions =
       List[(Double, Double) => Double](
-        (x, y) => Math.sin(2*x - y) - 1.2*x - 0.4,
-        (x, y) => 0.8*Math.pow(x, 2) + 1.5*Math.pow(y, 2) - 1)
+        (x, y) => a.get*Math.sin(x) + b.get - y,
+        (x, y) => c.get*Math.pow(Math.E, x) - y + d.get)
 
     val systemOf2NormalForm =
-      List[(Double, Double) => Double](
-        (x, y) => Math.sin(2*x - y) - 1.2*x - 0.4,
-        (x, y) => 0.8*Math.pow(x, 2) + 1.5*Math.pow(y, 2) - 1)
+      List[(Double) => Double](
+        (x) => a.get*Math.sin(x) + b.get,
+        (x) => c.get*Math.pow(Math.E, x) + d.get)
 
     val systemOf2dfdx =
       List[(Double, Double) => Double](
-        (x, y) => 2*Math.cos(2*x - y) - 1.2,
-        (x, y) => 1.6*x)
+        (x, y) => a.get*Math.cos(x),
+        (x, y) => c.get*Math.pow(Math.E, x))
 
     val systemOf2dfdy =
       List[(Double, Double) => Double](
-        (x, y) => -Math.cos(2*x - y),
-        (x, y) => 3*y)
+        (x, y) => -1,
+        (x, y) => -1)
 
     val systemOf2FM =
-      List[Double](0.4, 1)
+      List[Double](b.get+Math.E/3, 0+Math.E/3 + d.get)
+
+    val params =
+      List[Double](a.get, b.get, c.get, d.get)
 
     try {
-      val result = ChordMethod(low.get, high.get, accuracy.get, functions.head, deriatives.head).calcWithMethod()
-      val resultTangent = TangentMethod(low.get, high.get, accuracy.get, functions.head, deriatives.head).calcWithMethod()
-      val resultSystem = new NewtonSystemMethod(systemOf2Functions, systemOf2dfdx, systemOf2dfdy, systemOf2FM, accuracy.get).solveSystem()
-      val x = resultSystem(0)
-      val y = resultSystem(1)
-      println(s"Ответ: $result (метод хорд), $resultTangent (метод касательных)")
-      println(s"Решение системы: x - $x, y - $y")
-//      new LabChart("Метод хорд", low.get, high.get, functions.head).drawChart()
-//      new LabChart("Метод касательных", low.get, high.get, functions.head).drawChart()
-      new SystemEquationChart("Метод ньютона для системы уравнений", x, y, systemOf2Functions(0), systemOf2Functions(1))
+      funN.get match {
+
+        case 1 => {
+          val result = ChordMethod(low.get, high.get, accuracy.get, functions.head, dfdx.head, d2fdx2.head).calcWithMethod()
+          println(s"Ответ: $result (метод хорд)")
+          new EquationChart("Метод хорд", low.get, high.get, functions.head, params).drawChart()
+        }
+
+        case 2 => {
+          val result = TangentMethod(low.get, high.get, accuracy.get, functions.head, dfdx.head, d2fdx2.head).calcWithMethod()
+          println(s"Ответ: $result (метод касательных)")
+          new EquationChart("Метод касательных", low.get, high.get, functions.head, params).drawChart()
+        }
+
+        case 3 => {
+          val resultSystem = new NewtonSystemMethod(systemOf2Functions, systemOf2dfdx, systemOf2dfdy, systemOf2FM, accuracy.get).solveSystem()
+          val x = resultSystem(0)
+          val y = resultSystem(1)
+          println(s"Решение системы: x=$x, y=$y")
+          new SystemEquationChart("Метод ньютона для системы уравнений", x, y,
+            systemOf2NormalForm(0), systemOf2NormalForm(1), params).drawChart()
+        }
+      }
     } catch {
       case e: Exception => println(e.getMessage)
     }

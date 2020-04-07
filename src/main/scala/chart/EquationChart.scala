@@ -9,7 +9,7 @@ import org.jfree.chart.ui.{ApplicationFrame, RectangleInsets}
 import org.jfree.chart.{ChartFactory, ChartPanel, JFreeChart}
 import org.jfree.data.xy.{XYDataset, XYSeries, XYSeriesCollection}
 
-class EquationChart(title: String, a: Double, b: Double, f: Function[Double, Double]) extends ApplicationFrame("Lab3") {
+class EquationChart(title: String, a: Double, b: Double, f: Function[Double, Double], params: List[Double]) extends ApplicationFrame("Lab3") {
 
   def drawChart(): Unit = {
     val chart = createChart()
@@ -43,24 +43,23 @@ class EquationChart(title: String, a: Double, b: Double, f: Function[Double, Dou
 
     // Скрытие осевых линий и меток делений
     val axis = plot.getDomainAxis()
-    axis.setAxisLineVisible(false)   // осевая линия
+    axis.setAxisLineVisible(true)   // осевая линия
 
     val rangeAxis =  plot.getRangeAxis()
-    rangeAxis.setAxisLineVisible(false)
-    rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits())
+    rangeAxis.setAxisLineVisible(true)
 
     val r = new XYSplineRenderer() //характеристики графика
     r.setPrecision(8)
     r.setSeriesShapesVisible(0, false)
     r.setSeriesPaint(0, Color.blue)
 
-    val dataset = createDataset(a, b)
+    val dataset = createDataset(a, b, params)
     val xAxis = createXAxis(a, b)
 
     val r1 = new XYSplineRenderer()
 
     r.setSeriesPaint(1, Color.black)
-    r.setSeriesShapesVisible(1, false)
+    r1.setSeriesShapesVisible(0, false)
 
     plot.setDataset(0, dataset)
     plot.setDataset(1, xAxis)
@@ -72,9 +71,10 @@ class EquationChart(title: String, a: Double, b: Double, f: Function[Double, Dou
     chart
   }
 
-  def createDataset(a: Double, b: Double): XYDataset = {
+  def createDataset(a: Double, b: Double, p: List[Double]): XYDataset = {
     val step = Math.abs(b - a) / 100
-    val dataset = new XYSeries(new String("x^3"))
+    val pa = p(0); val pb = p(1); val pc = p(2); val pd = p(3)
+    val dataset = new XYSeries(new String(s"$pa*x^3 + $pb*x^2 + $pc*x + $pd"))
     var i = a
     while (i < b) {
       dataset.add(i, f(i))
@@ -88,7 +88,7 @@ class EquationChart(title: String, a: Double, b: Double, f: Function[Double, Dou
   }
 
   def createXAxis(a: Double, b: Double): XYDataset = {
-    val dataset = new XYSeries(2)
+    val dataset = new XYSeries(new String("y = 0"))
     dataset.add(a, 0)
     dataset.add(b, 0)
 

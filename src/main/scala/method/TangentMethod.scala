@@ -1,18 +1,20 @@
 package method
 
 object TangentMethod {
-  def apply(a: Double, b: Double, e: Double, f: Function[Double, Double], dfdx: Function[Double, Double]): TangentMethod = {
-    new TangentMethod(a, b, e, f, dfdx)
+  def apply(a: Double, b: Double, e: Double, f: Function[Double, Double], dfdx: Function[Double, Double], d2fdx2: Function[Double, Double]): TangentMethod = {
+    new TangentMethod(a, b, e, f, dfdx, d2fdx2)
   }
 }
 
-class TangentMethod(a: Double, b: Double, e: Double, f: Function[Double, Double], dfdx: Function[Double, Double]) {
+class TangentMethod(a: Double, b: Double, e: Double, f: Function[Double, Double], dfdx: Function[Double, Double], d2fdx2: Function[Double, Double]) {
 
   def calcWithMethod(): Double = {
     if (f(a)*f(b) >= 0)
       throw new IllegalArgumentException("Не выполняется достатчное условие сходимости: функция имеет одинаковый знак на концах отрезка")
     if (dfdx(a) * dfdx(b) <= 0)
       throw new IllegalArgumentException("Не выполняется достатчное условие сходимости: первая производная не сохраняет знак на концах отрезка")
+    if (d2fdx2(a) * d2fdx2(b) <= 0)
+      throw new IllegalArgumentException("Не выполняется достатчное условие сходимости: вторая производная не сохраняет знак на концах отрезка")
     else {
       var xi = (b+a)/2.0
       var n = 0;

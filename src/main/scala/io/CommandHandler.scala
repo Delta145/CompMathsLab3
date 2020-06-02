@@ -62,19 +62,29 @@ class CommandHandler {
       d = Some(2.458)
     }
 
+
+    var high: Option[Double] = None
     var low: Option[Double] = None
     if (funN.get != 3) {
       while (low.isEmpty) {
         println("Введите левую границу отрезка")
         low = readDoubleSafe()
       }
-    }
-
-    var high: Option[Double] = None
-    if (funN.get != 3) {
       while (high.isEmpty || high.get <= low.get) {
         println("Введите правую границу отрезка. Она должна быть больше левой границы!")
         high = readDoubleSafe()
+      }
+    } else {
+      println("Хотите ли вы сами задать приближенное значение для системы? Если нет - программа сама их выберет")
+      if (StdIn.readLine().toLowerCase().equals("да")) {
+        while (low.isEmpty) {
+          println("Введите приближенное значение \'x\'")
+          low = readDoubleSafe()
+        }
+        while (high.isEmpty) {
+          println("Введите приближенное значение \'y\'")
+          high = readDoubleSafe()
+        }
       }
     }
 
@@ -112,7 +122,7 @@ class CommandHandler {
         (x, y) => -1)
 
     val systemOf2FM =
-      List[Double](b.get+Math.E/3, 0+Math.E/3 + d.get)
+      List[Double](if (low.isEmpty) { b.get+Math.E/5 } else low.get+Math.E/5, if (high.isEmpty) { 0+Math.E/5 + d.get } else high.get+Math.E/5)
 
     val params =
       List[Double](a.get, b.get, c.get, d.get)
